@@ -4,7 +4,6 @@ import tkinter as tk
 import numpy as np
 import pyaudio
 import time
-import wave
 from tkinter import ttk
 from tkinter import messagebox
 
