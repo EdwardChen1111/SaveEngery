@@ -4,6 +4,8 @@ import tkinter as tk
 import numpy as np
 import pyaudio
 import time
+import wave
+import os
 from tkinter import ttk
 from tkinter import messagebox
 
@@ -11,6 +13,10 @@ fig, ax = plt.subplots()
 now = ""
 watertype = ""
 soundnum = 0
+dirc = os.getcwd()
+if not ('train' in os.listdir()):
+    os.mkdir('train')
+os.chdir(dirc + '/train')
 
 def runStartGUI():
     global now
@@ -64,41 +70,44 @@ def runStartGUI():
 def startListening():
     global now, watertype, soundnum
     
+    if not (str(watertype) in os.listdir()):
+        os.mkdir(str(watertype))
+    filenum = len(os.listdir(str(watertype)))
+    os.chdir(dirc + '/train/' + str(watertype))
+    
+    
     p = pyaudio.PyAudio()
-    chunk = 44100
+    chunk = 16000
     sample_format = pyaudio.paInt16
     channels = 1
-    fs = 44100
+    fs = 16000
     stream = p.open(format=sample_format,
                     channels=channels,
                     rate=fs,
                     input=True,
                     frames_per_buffer=chunk)
-    soundtemp = np.load("train.npz")
-    soundarr, soundlab = soundtemp['x_train'], soundtemp['x_labels']
-    soundarr = soundarr.tolist()
-    soundlab = soundlab.tolist()
     
     for i in range(soundnum):
         if now != "end":
+            filenum += 1
             frames = []
-            for j in range(5):
+            for j in range(1):
                 data = stream.read(chunk)
-                frames += data
-            for k in range(len(frames)):
-                frames[k] /= 65535
+                frames.append(data)
             
-            soundarr.append(frames)
-            soundlab.append(watertype)
-            print(len(frames), len(soundarr))
+            wf = wave.open(f'{filenum}.wav', 'wb')
+            wf.setnchannels(channels)
+            wf.setsampwidth(p.get_sample_size(sample_format))
+            wf.setframerate(fs)
+            wf.writeframes(b''.join(frames))
+            wf.close()
         else:
             break
+    
     stream.stop_stream()
     stream.close()
-    soundarr = np.array(soundarr)
-    soundlab = np.array(soundlab)    
+    os.chdir(dirc + '/train')
     
-    np.savez_compressed("train.npz", x_train=soundarr, x_labels=soundlab)
     now = "starting"
 
 if __name__ == '__main__':
