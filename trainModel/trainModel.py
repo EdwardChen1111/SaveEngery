@@ -197,4 +197,4 @@ class ExportModel(tf.Module):
             'class_ids': class_ids,
             'class_names': class_names}
 
-model.save('saved_model/my_model')
+model.save('saved_model')
