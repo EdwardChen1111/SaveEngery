@@ -8,7 +8,7 @@ seed = 42
 tf.random.set_seed(seed)
 np.random.seed(seed)
 
-DATASET_PATH = 'data/train'
+DATASET_PATH = 'data/trainData'
 
 data_dir = pathlib.Path(DATASET_PATH)
 
