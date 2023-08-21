@@ -1,11 +1,8 @@
-import os
 import pathlib
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
 import tensorflow as tf
-
-from IPython import display
 
 seed = 42
 tf.random.set_seed(seed)
