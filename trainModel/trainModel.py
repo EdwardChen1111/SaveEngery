@@ -7,7 +7,6 @@ import tensorflow as tf
 
 from IPython import display
 
-# Set the seed value for experiment reproducibility.
 seed = 42
 tf.random.set_seed(seed)
 np.random.seed(seed)
@@ -34,14 +33,9 @@ def squeeze(audio, labels):
   return audio, labels
 
 def get_spectrogram(waveform):
-  # Convert the waveform to a spectrogram via a STFT.
   spectrogram = tf.signal.stft(
       waveform, frame_length=255, frame_step=128)
-  # Obtain the magnitude of the STFT.
   spectrogram = tf.abs(spectrogram)
-  # Add a `channels` dimension, so that the spectrogram can be used
-  # as image-like input data with convolution layers (which expect
-  # shape (`batch_size`, `height`, `width`, `channels`).
   spectrogram = spectrogram[..., tf.newaxis]
   return spectrogram
   
@@ -49,9 +43,6 @@ def plot_spectrogram(spectrogram, ax):
   if len(spectrogram.shape) > 2:
     assert len(spectrogram.shape) == 3
     spectrogram = np.squeeze(spectrogram, axis=-1)
-  # Convert the frequencies to log scale and transpose, so that the time is
-  # represented on the x-axis (columns).
-  # Add an epsilon to avoid taking a log of zero.
   log_spec = np.log(spectrogram.T + np.finfo(float).eps)
   height = log_spec.shape[0]
   width = log_spec.shape[1]
@@ -105,20 +96,6 @@ for i in range(3):
   waveform = example_audio[i]
   spectrogram = get_spectrogram(waveform)
 
-  # print('Label:', label)
-  # print('Waveform shape:', waveform.shape)
-  # print('Spectrogram shape:', spectrogram.shape)
-  # print('Audio playback')
-# fig, axes = plt.subplots(2, figsize=(12, 8))
-# timescale = np.arange(waveform.shape[0])
-# axes[0].plot(timescale, waveform.numpy())
-# axes[0].set_title('Waveform')
-# axes[0].set_xlim([0, 16000])
-# plot_spectrogram(spectrogram.numpy(), axes[1])
-# axes[1].set_title('Spectrogram')
-# plt.suptitle(label.title())
-# plt.show()
-
 rows = 3
 cols = 3
 n = rows*cols
@@ -136,9 +113,7 @@ print('Input shape:', input_shape)
 
 model = tf.keras.models.Sequential([
     tf.keras.layers.Input(shape=input_shape),
-    # Downsample the input.
     tf.keras.layers.Resizing(32, 32),
-    # Normalize.
     norm_layer,
     tf.keras.layers.Conv2D(32, 3, activation='relu'),
     tf.keras.layers.Conv2D(64, 3, activation='relu'),
@@ -200,25 +175,9 @@ plt.xlabel('Prediction')
 plt.ylabel('Label')
 plt.show()
 
-# x = data_dir/'no/01bb6a2a_nohash_0.wav'
-# x = tf.io.read_file(str(x))
-# x, sample_rate = tf.audio.decode_wav(x, desired_channels=1, desired_samples=16000,)
-# x = tf.squeeze(x, axis=-1)
-# waveform = x
-# x = get_spectrogram(x)
-# x = x[tf.newaxis,...]
-# prediction = model(x)
-# x_labels = ['no', 'yes', 'down', 'go', 'left', 'up', 'right', 'stop']
-# plt.bar(x_labels, tf.nn.softmax(prediction[0]))
-# plt.title('No')
-# plt.show()
-# display.display(display.Audio(waveform, rate=16000))
-
 class ExportModel(tf.Module):
   def __init__(self, model):
     self.model = model
-    # Accept either a string-filename or a batch of waveforms.
-    # YOu could add additional signatures for a single wave, or a ragged-batch. 
     self.__call__.get_concrete_function(
         x=tf.TensorSpec(shape=(), dtype=tf.string))
     self.__call__.get_concrete_function(
@@ -226,7 +185,6 @@ class ExportModel(tf.Module):
 
   @tf.function
   def __call__(self, x):
-    # If they pass a string, load the file and decode it. 
     if x.dtype == tf.string:
       x = tf.io.read_file(x)
       x, _ = tf.audio.decode_wav(x, desired_channels=1, desired_samples=16000,)
