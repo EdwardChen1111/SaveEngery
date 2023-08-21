@@ -1,13 +1,11 @@
 import matplotlib.pyplot as plt
 import threading as thread
 import tkinter as tk
-import numpy as np
 import pyaudio
 import time
 import wave
 import os
 from tkinter import ttk
-from tkinter import messagebox
 
 fig, ax = plt.subplots()
 now = ""
@@ -73,7 +71,7 @@ def startListening():
     if not (str(watertype) in os.listdir()):
         os.mkdir(str(watertype))
     filenum = len(os.listdir(str(watertype)))
-    os.chdir(dirc + '/train/' + str(watertype))
+    os.chdir(dirc + '/trainData/' + str(watertype))
     
     
     p = pyaudio.PyAudio()
@@ -106,7 +104,7 @@ def startListening():
     
     stream.stop_stream()
     stream.close()
-    os.chdir(dirc + '/train')
+    os.chdir(dirc + '/trainData')
     
     now = "starting"
 
