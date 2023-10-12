@@ -4,11 +4,11 @@ import numpy as np
 import seaborn as sns
 import tensorflow as tf
 
-seed = 42
+seed = 94879478
 tf.random.set_seed(seed)
 np.random.seed(seed)
 
-DATASET_PATH = 'data/trainData'
+DATASET_PATH = 'trainData'
 
 data_dir = pathlib.Path(DATASET_PATH)
 
@@ -17,7 +17,6 @@ train_ds, val_ds = tf.keras.utils.audio_dataset_from_directory(
     batch_size=64,
     validation_split=0.2,
     seed=0,
-    output_sequence_length=16000,
     subset='both')
 
 label_names = np.array(train_ds.class_names)
@@ -110,16 +109,18 @@ print('Input shape:', input_shape)
 
 model = tf.keras.models.Sequential([
     tf.keras.layers.Input(shape=input_shape),
-    tf.keras.layers.Resizing(32, 32),
+    tf.keras.layers.Resizing(64, 32),
     norm_layer,
-    tf.keras.layers.Conv2D(32, 3, activation='relu'),
+    tf.keras.layers.Dropout(0.1),
     tf.keras.layers.Conv2D(64, 3, activation='relu'),
     tf.keras.layers.MaxPooling2D(),
-    tf.keras.layers.Dropout(0.25),
     tf.keras.layers.Flatten(),
+    tf.keras.layers.Dropout(0.25),
     tf.keras.layers.Dense(128, activation='relu'),
     tf.keras.layers.Dropout(0.5),
-    tf.keras.layers.Dense(num_labels),
+    tf.keras.layers.Dense(32, activation='relu'),
+    tf.keras.layers.Dropout(0.5),
+    tf.keras.layers.Dense(num_labels, activation=tf.nn.softmax),
 ])
 
 model.summary()
@@ -130,7 +131,7 @@ model.compile(
     metrics=['accuracy'],
 )
 
-EPOCHS = 10
+EPOCHS = 5
 history = model.fit(
     train_spectrogram_ds,
     validation_data=val_spectrogram_ds,
