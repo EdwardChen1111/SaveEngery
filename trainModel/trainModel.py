@@ -4,7 +4,7 @@ import numpy as np
 import seaborn as sns
 import tensorflow as tf
 
-seed = 94879478
+seed = 48763
 tf.random.set_seed(seed)
 np.random.seed(seed)
 
@@ -109,17 +109,14 @@ print('Input shape:', input_shape)
 
 model = tf.keras.models.Sequential([
     tf.keras.layers.Input(shape=input_shape),
-    tf.keras.layers.Resizing(64, 32),
+    tf.keras.layers.Resizing(64, 64),
     norm_layer,
-    tf.keras.layers.Dropout(0.1),
-    tf.keras.layers.Conv2D(64, 3, activation='relu'),
     tf.keras.layers.MaxPooling2D(),
-    tf.keras.layers.Flatten(),
     tf.keras.layers.Dropout(0.25),
+    tf.keras.layers.Flatten(),
     tf.keras.layers.Dense(128, activation='relu'),
-    tf.keras.layers.Dropout(0.5),
+    tf.keras.layers.Dropout(0.25),
     tf.keras.layers.Dense(32, activation='relu'),
-    tf.keras.layers.Dropout(0.5),
     tf.keras.layers.Dense(num_labels, activation=tf.nn.softmax),
 ])
 
@@ -137,6 +134,7 @@ history = model.fit(
     validation_data=val_spectrogram_ds,
     epochs=EPOCHS,
     callbacks=tf.keras.callbacks.EarlyStopping(verbose=1, patience=2),
+    verbose=0,
 )
 
 metrics = history.history
@@ -154,9 +152,9 @@ plt.ylim([0, 100])
 plt.xlabel('Epoch')
 plt.ylabel('Accuracy [%]')
 
-model.evaluate(test_spectrogram_ds, return_dict=True)
+model.evaluate(test_spectrogram_ds, return_dict=True, verbose=0)
 
-y_pred = model.predict(test_spectrogram_ds)
+y_pred = model.predict(test_spectrogram_ds, verbose=0)
 
 y_pred = tf.argmax(y_pred, axis=1)
 
